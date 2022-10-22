@@ -12,8 +12,12 @@ public class PlayerScript : MonoBehaviour
     public Text lives;
     private int scoreValue = 0;
     private int livesValue = 3;
-    public float jumpForce = 3;
+    public float jumpForce;
     public GameObject winTextObject;
+    public AudioClip musicBackground;
+    public AudioClip musicWin;
+    public AudioClip musicLose;
+    public AudioSource musicSource;
 
     // Start is called before the first frame update
     void Start()
@@ -22,15 +26,16 @@ public class PlayerScript : MonoBehaviour
         score.text = scoreValue.ToString();
         lives.text = livesValue.ToString();
         winTextObject.SetActive(false);
+
+        musicSource.clip = musicBackground;
+        musicSource.loop = true;
+        musicSource.Play();
+
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
-        if(scoreValue == 4)
-        {
-            winTextObject.SetActive(true);
-        }
         float hozMovement = Input.GetAxis("Horizontal");
         float verMovement = Input.GetAxis("Vertical");
 
@@ -45,6 +50,24 @@ public class PlayerScript : MonoBehaviour
             scoreValue += 1;
             score.text = scoreValue.ToString();
             Destroy(collision.collider.gameObject);
+            
+            if(scoreValue == 4)
+            {
+                livesValue = 3;
+                lives.text = livesValue.ToString();
+                transform.position = new Vector3(41.0f, 0.0f, 0.0f); 
+            }
+
+            if(scoreValue == 8)
+            {
+                winTextObject.SetActive(true); 
+                musicSource.clip = musicWin;
+                musicSource.loop = false;
+                musicSource.Play();
+
+                Destroy(this);
+            }
+
         }
 
         if(collision.collider.tag == "Enemy")
@@ -58,6 +81,9 @@ public class PlayerScript : MonoBehaviour
         {
             winTextObject.GetComponent<TMPro.TextMeshProUGUI>().text = "Michael Colon says Game Over!";
             winTextObject.SetActive(true);
+            musicSource.clip = musicLose;
+            musicSource.loop = false;
+            musicSource.Play();
             Destroy(this);
         }
     }

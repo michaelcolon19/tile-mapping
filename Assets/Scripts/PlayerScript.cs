@@ -18,11 +18,19 @@ public class PlayerScript : MonoBehaviour
     public AudioClip musicWin;
     public AudioClip musicLose;
     public AudioSource musicSource;
+    private bool facingRight = true;
+    Animator anim;
+
+    private bool isOnGround;
+    public Transform groundcheck;
+    public float checkRadius;
+    public LayerMask allGround;
 
     // Start is called before the first frame update
     void Start()
     {
         rd2d = GetComponent<Rigidbody2D>();
+        anim = GetComponent<Animator>();
         score.text = scoreValue.ToString();
         lives.text = livesValue.ToString();
         winTextObject.SetActive(false);
@@ -38,6 +46,30 @@ public class PlayerScript : MonoBehaviour
     {
         float hozMovement = Input.GetAxis("Horizontal");
         float verMovement = Input.GetAxis("Vertical");
+
+        isOnGround = Physics2D.OverlapCircle(groundcheck.position, checkRadius, allGround);
+
+        if (isOnGround == false)
+        {
+            anim.SetInteger("State", 2);
+        }
+        else if (hozMovement != 0)
+        {
+            anim.SetInteger("State", 1);
+        }
+        else
+        {
+            anim.SetInteger("State", 0);
+        }
+
+        if (facingRight == false && hozMovement > 0)
+        {
+            Flip();
+        }
+        else if (facingRight == true && hozMovement < 0)
+        {
+            Flip();
+        }
 
         rd2d.AddForce(new Vector2(hozMovement * speed, verMovement * speed));
 
@@ -64,7 +96,6 @@ public class PlayerScript : MonoBehaviour
                 musicSource.clip = musicWin;
                 musicSource.loop = false;
                 musicSource.Play();
-
                 Destroy(this);
             }
 
@@ -90,7 +121,7 @@ public class PlayerScript : MonoBehaviour
 
     private void OnCollisionStay2D(Collision2D collision)
     {
-        if(collision.collider.tag == "Ground")
+        if(collision.collider.tag == "Ground" && isOnGround)
         {
             if(Input.GetKey(KeyCode.W))
             {
@@ -99,4 +130,11 @@ public class PlayerScript : MonoBehaviour
         }
     }
 
+    void Flip()
+    {
+        facingRight = !facingRight;
+        Vector2 Scaler = transform.localScale;
+        Scaler.x = Scaler.x * -1;
+        transform.localScale = Scaler;
+    }
 }
